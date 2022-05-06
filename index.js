@@ -30,25 +30,44 @@ async function run() {
         //loading single data
         app.get('/fruit/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id: ObjectId(id)};
+            const query = { _id: ObjectId(id) };
             const fruit = await fruitsCollection.findOne(query);
             res.send(fruit);
         })
 
         //post data
-        app.post('/fruit', async (req, res) =>{
+        app.post('/fruit', async (req, res) => {
             const newItems = req.body;
             const result = await fruitsCollection.insertOne(newItems);
             res.send(result);
         })
 
         //delete data
-        app.delete('/fruit/:id', async(req, res)=>{
+        app.delete('/fruit/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id: ObjectId(id)};
+            const query = { _id: ObjectId(id) };
             const result = await fruitsCollection.deleteOne(query);
             res.send(result);
         })
+
+        //update a fruits info
+
+        app.put('/fruit/:id', async (req, res) => {
+            const id = req.params.id;
+            const updatedInfo = req.body;
+            console.log(updatedInfo);
+            console.log(id);
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: {
+                    quantity: updatedInfo.newQuantity || updatedInfo.removedQuantity
+                }
+            }
+            const result = await fruitsCollection.updateOne(filter,  updatedDoc, options);
+            res.send(result);
+        })
+
     }
     finally {
 
@@ -63,5 +82,5 @@ app.get('/', (req, res) => {
 })
 
 app.listen(port, () => {
-    console.log('Listining to port', port);
+    console.log('Listening to port', port);
 })
