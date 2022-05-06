@@ -6,6 +6,7 @@ const port = process.env.PORT || 5000;
 const app = express();
 
 //middlewares
+
 app.use(cors());
 app.use(express.json());
 
@@ -56,7 +57,7 @@ async function run() {
             const id = req.params.id;
             const updatedInfo = req.body;
             const filter = { _id: ObjectId(id) };
-            const options = { upsert: true }
+            const options = { upsert: true };
             const updatedDoc = {
                 $set: {
                     quantity: updatedInfo.newQuantity || updatedInfo.removedQuantity
