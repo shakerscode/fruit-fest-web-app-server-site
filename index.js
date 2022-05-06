@@ -55,8 +55,6 @@ async function run() {
         app.put('/fruit/:id', async (req, res) => {
             const id = req.params.id;
             const updatedInfo = req.body;
-            console.log(updatedInfo);
-            console.log(id);
             const filter = { _id: ObjectId(id) };
             const options = { upsert: true }
             const updatedDoc = {
