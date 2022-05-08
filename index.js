@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+var jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
@@ -62,6 +63,15 @@ async function run() {
             }
             const result = await fruitsCollection.updateOne(filter,  updatedDoc, options);
             res.send(result);
+        })
+
+        //token api
+        app.post('/token', async(req, res) =>{
+            const user = req.body;
+            const userToken = jwt.sign(user, process.env.USER_TOKEN, {
+                expiresIn: '2d'
+            })
+            res.send({userToken})
         })
 
         
