@@ -11,20 +11,20 @@ app.use(cors());
 app.use(express.json());
 
 
-// function verifyJWTToken(req, res, next) {
-//     const authHeader = req.headers.authorization;
-//     if(!authHeader){
-//         return res.status(401).send({message: 'Unauthorized user'})
-//     }
-//     const token = authHeader.split(' ')[1]
-//     jwt.verify(token, process.env.USER_TOKEN, (err, decoded)=>{
-//         if(err){
-//             return res.status(403).send({message: 'Forbidden'})
-//         }
-//         req.decoded = decoded;
-//     })
-//     next()
-// }
+function verifyJWTToken(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if(!authHeader){
+        return res.status(401).send({message: 'Unauthorized user'})
+    }
+    const token = authHeader.split(' ')[1]
+    jwt.verify(token, process.env.USER_TOKEN, (err, decoded)=>{
+        if(err){
+            return res.status(403).send({message: 'Forbidden'})
+        }
+        req.decoded = decoded;
+    })
+    next()
+}
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.bdorb.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
@@ -47,6 +47,20 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const fruit = await fruitsCollection.findOne(query);
             res.send(fruit);
+        })
+
+         //user item
+        app.get('/fruit', verifyJWTToken, async (req, res) => {
+            const decodedEmail = req.decoded.email;
+            const email = req.query.email;
+            console.log(email);
+            if(email === decodedEmail){
+                const query = {email: email};
+                const cursor = fruitsCollection.find(query);
+                const items = await cursor.toArray();
+                res.send(items);
+            }
+
         })
 
         //post data from ui
@@ -89,19 +103,7 @@ async function run() {
             res.send({ userToken })
         })
 
-        //user item
-        // app.get('/fruits', verifyJWTToken, async (req, res) => {
-        //     const decodedEmail = req.decoded.email;
-        //     const email = req.query.email;
-        //     console.log(email);
-        //     if(email === decodedEmail){
-        //         const query = {email: email};
-        //         const cursor = fruitsCollection.find(query);
-        //         const items = await cursor.toArray();
-        //         res.send(items);
-        //     }
-
-        // })
+       
 
 
     }
