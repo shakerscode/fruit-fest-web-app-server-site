@@ -21,7 +21,6 @@ function verifyJWTToken(req, res, next) {
         if(err){
             return res.status(403).send({message: 'Forbidden'})
         }
-        console.log('decoded', decoded);
         req.decoded = decoded;
     })
     next()
