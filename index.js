@@ -10,6 +10,22 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
+function verifyJWTToken(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if(!authHeader){
+        return res.status(401).send({message: 'Unauthorized user'})
+    }
+    const token = authHeader.split(' ')[1]
+    jwt.verify(token, process.env.USER_TOKEN, (err, decoded)=>{
+        if(err){
+            return res.status(403).send({message: 'Forbidden'})
+        }
+        console.log('decoded', decoded);
+        req.decoded = decoded;
+    })
+    next()
+}
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.bdorb.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
@@ -61,20 +77,33 @@ async function run() {
                     quantity: updatedInfo.newQuantity || updatedInfo.removedQuantity
                 }
             }
-            const result = await fruitsCollection.updateOne(filter,  updatedDoc, options);
+            const result = await fruitsCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
         })
 
         //token api
-        app.post('/token', async(req, res) =>{
+        app.post('/token', async (req, res) => {
             const user = req.body;
             const userToken = jwt.sign(user, process.env.USER_TOKEN, {
                 expiresIn: '2d'
             })
-            res.send({userToken})
+            res.send({ userToken })
         })
 
-        
+        //user item
+        app.get('/fruits', verifyJWTToken, async (req, res) => {
+            const decodedEmail = req.decoded.email;
+            const email = req.query.email;
+            if(email === decodedEmail){
+                const query = {email: email};
+                const cursor = fruitsCollection.find(query);
+                const items = await cursor.toArray();
+                res.send(items);
+            }
+
+        })
+
+
     }
     finally {
 
