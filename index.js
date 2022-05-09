@@ -22,9 +22,12 @@ function verifyJWTToken(req, res, next) {
             return res.status(403).send({message: 'Forbidden'})
         }
         req.decoded = decoded;
+        next()
     })
-    next()
 }
+
+
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.bdorb.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
@@ -50,10 +53,9 @@ async function run() {
         })
 
          //user item
-        app.get('/fruit', verifyJWTToken, async (req, res) => {
+        app.get('/myfruits', verifyJWTToken, async (req, res) => {
             const decodedEmail = req.decoded.email;
             const email = req.query.email;
-            console.log(email);
             if(email === decodedEmail){
                 const query = {email: email};
                 const cursor = fruitsCollection.find(query);
@@ -97,10 +99,11 @@ async function run() {
         //token api
         app.post('/token', async (req, res) => {
             const user = req.body;
+            console.log(user);
             const userToken = jwt.sign(user, process.env.USER_TOKEN, {
                 expiresIn: '2d'
             })
-            res.send({ userToken })
+            res.send({userToken})
         })
 
        
